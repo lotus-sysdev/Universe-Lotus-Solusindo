@@ -16,4 +16,5 @@ openpyxl
 gunicorn 
 psycopg2-binary
 django-modeladmin-reorder
-
+django-cron
+python-dotenv
