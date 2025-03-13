@@ -75,23 +75,64 @@
   <thead class="thead-light">
     {% csrf_token %}
     <tr>
-      <th>Upload Type</th>
-      <th>Tanggal Input</th>
-      <th>Tanggal Pesan</th>
-      <th>Customer</th>
-      <th>PIC</th>
-      <th>SKU</th>
-      <th>Nama</th>
-      <th>Catatan</th>
-      <th>Category</th>
-      <th>Quantity</th>
-      <th>Price</th>
-      <th>Gambar</th>
-      <th>Link</th>
-      <th>Status (Approve)</th>
-      <th>Edit/Delete</th>
+        <th>Upload Type</th>
+        <th>
+            Tanggal Input
+            <input type="text" class="form-control" id="searchTanggalInput" placeholder="Search">
+        </th>
+        <th>
+            Tanggal Pesan
+            <input type="text" class="form-control" id="searchTanggalPesan" placeholder="Search">
+        </th>
+        <th>
+            Customer
+            <input type="text" class="form-control" id="searchCustomer" placeholder="Search">
+        </th>
+        <th>
+            PIC
+            <input type="text" class="form-control" id="searchPIC" placeholder="Search">
+        </th>
+        <th>
+            SKU
+            <input type="text" class="form-control" id="searchSKU" placeholder="Search">
+        </th>
+        <th>
+            Nama
+            <input type="text" class="form-control" id="searchNama" placeholder="Search">
+        </th>
+        <th>
+            Catatan
+            <input type="text" class="form-control" id="searchCatatan" placeholder="Search">
+        </th>
+        <th>
+            Category
+            <input type="text" class="form-control" id="searchCategory" placeholder="Search">
+        </th>
+        <th>
+            Quantity
+            <input type="text" class="form-control" id="searchQuantity" placeholder="Search">
+        </th>
+        <th>
+            Price
+            <input type="text" class="form-control" id="searchPrice" placeholder="Search">
+        </th>
+        <th>
+            Gambar
+        </th>
+        <th>
+            Link
+        </th>
+        <th>
+            Status (Approve)
+            <input type="text" class="form-control" id="searchStatus" placeholder="Search">
+        </th>
+        <th>Edit/Delete</th>
     </tr>
   </thead>
+
+  <!-- Tombol untuk melakukan pencarian berdasarkan filter -->
+  <button id="applyFilters" class="btn btn-primary">Apply Filters</button>
+
   <tbody>
     
   </tbody>
@@ -110,6 +151,7 @@
     table = new DataTable("#itemTable", {
         processing: true,
         serverSide: true,
+        stateSave: true,
         ajax: {
             url: "{% url 'item_list' %}",
             type: "GET",
@@ -119,6 +161,7 @@
                 d.end_date = $('#endDate').val();            // End date filter
                 d.search_col = $('#columnFilter').val();  // Add search column
                 d.search_val = $('#columnSearch').val().trim();
+                // d.search_value = d.search.value; 
             },
             dataSrc: function(json) {
                 // Log the JSON response to check if data is being received correctly
@@ -263,6 +306,27 @@
           },
         },
     });
+
+    $("#applyFilters").on("click", function () {
+        // Ambil nilai dari filter input
+        var filters = {
+            startDate: $('#searchTanggalInput').val(),
+            endDate: $('#searchTanggalPesan').val(),
+            customer: $('#searchCustomer').val(),
+            pic: $('#searchPIC').val(),
+            sku: $('#searchSKU').val(),
+            nama: $('#searchNama').val(),
+            catatan: $('#searchCatatan').val(),
+            category: $('#searchCategory').val(),
+            quantity: $('#searchQuantity').val(),
+            price: $('#searchPrice').val(),
+            status: $('#searchStatus').val(),
+        };
+
+        // Update DataTable dengan filter baru
+        table.ajax.reload();
+    });
+
 
    $("#exportPdfBtn").on("click", function () {
         var selectedData = table.rows({ selected: true }).data().toArray();
