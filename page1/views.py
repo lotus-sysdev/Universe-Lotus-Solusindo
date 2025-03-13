@@ -382,69 +382,46 @@ def item_list(request):
     draw = int(request.GET.get('draw', 1))
     start = int(request.GET.get('start', 0))
     length = int(request.GET.get('length', 10))
-    search_column = request.GET.get('search_col')
-    search_value = request.GET.get('search_val')
-
+    
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
-    
+    customer = request.GET.get('customer')
+    pic = request.GET.get('pic')
+    sku = request.GET.get('sku')
+    nama = request.GET.get('nama')
+    catatan = request.GET.get('catatan')
+    category = request.GET.get('category')
+    quantity = request.GET.get('quantity')
+    price = request.GET.get('price')
+    status = request.GET.get('status')
+
     items = Items.objects.all()
 
-    # Date range filtering
+    # Filter by date range if provided
     if start_date_str and end_date_str:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
         items = items.filter(tanggal_pemesanan__range=[start_date, end_date])
 
-    # Define the mapping outside the conditional block
-    mapping = {
-        '0': 'upload_type',
-        '1': 'Tanggal',
-        '2': 'tanggal_pemesanan',
-        '3': 'customer__nama_pt',
-        '4': 'pic__nama',
-        '5': 'SKU',
-        '6': 'nama',
-        '7': 'category__name',
-        '8': 'catatan',
-        '9': 'quantity',
-        '10': 'price',
-        '13': 'is_approved',
-    }
-
-    # Column-based search
-    if search_value:
-        if search_column:
-            field = mapping.get(search_column)
-            if field:
-                if search_column == '13':  # Handle the 'is_approved' column search
-                    # Handle "Yes" and "No" filtering based on the approved status
-                    if search_value.lower() == 'yes':
-                        items = items.filter(is_approved=True)
-                    elif search_value.lower() == 'no':
-                        items = items.filter(is_approved=False)
-                elif search_column in ['1', '2']:  # Handle date columns
-                    try:
-                        date_value = datetime.strptime(search_value, '%Y-%m-%d').date()
-                        items = items.filter(**{f"{field}": date_value})
-                    except ValueError:
-                        items = items.none()
-                else:
-                    filter_kwargs = {f"{field}__icontains": search_value}
-                    items = items.filter(**filter_kwargs)
-            else:
-                items = items.filter(Q(nama__icontains=search_value) | Q(SKU__icontains=search_value))
-        else:
-            items = items.filter(Q(nama__icontains=search_value) | Q(SKU__icontains=search_value))
-
-    # Ordering
-    order_column_index = int(request.GET.get('order[0][column]', 2))  # Default column to sort by is column 2 (tanggal_pemesanan)
-    order_direction = request.GET.get('order[0][dir]', 'desc')  # Default direction is descending
-    order_column = mapping.get(str(order_column_index), 'tanggal_pemesanan')
-    if order_direction == 'asc':
-        items = items.order_by(order_column)
-    else:
-        items = items.order_by(f'-{order_column}')
+    # Apply additional filters
+    if customer:
+        items = items.filter(customer__nama_pt__icontains=customer)
+    if pic:
+        items = items.filter(pic__nama__icontains=pic)
+    if sku:
+        items = items.filter(SKU__icontains=sku)
+    if nama:
+        items = items.filter(nama__icontains=nama)
+    if catatan:
+        items = items.filter(catatan__icontains=catatan)
+    if category:
+        items = items.filter(category__name__icontains=category)
+    if quantity:
+        items = items.filter(quantity__icontains=quantity)
+    if price:
+        items = items.filter(price__icontains=price)
+    if status:
+        items = items.filter(is_approved__icontains=status)
 
     # Pagination
     paginator = Paginator(items, length)
@@ -482,6 +459,9 @@ def item_list(request):
     }
 
     return JsonResponse(response)
+
+
+
 
 def display_item(request):
     return render(request, 'item/display_item.html')
